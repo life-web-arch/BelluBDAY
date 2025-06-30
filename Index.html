@@ -1,0 +1,1727 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>A Special Day for My Love!</title>
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/ScrollTrigger.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/TextPlugin.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
+
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Poppins:wght@300;400;600&family=Comic+Neue:wght@700&display=swap" rel="stylesheet">
+
+    <style>
+    
+        /* ---
+        Part 1: Core Styles, Variables, and New Backgrounds
+        --- */
+        
+        :root {
+            --primary-color: #1a1a2e;
+            --secondary-color: rgba(27, 27, 46, 0.8);
+            --card-background: rgba(42, 42, 68, 0.85);
+            --text-color: #e0e0e0;
+            --heading-color: #ffffff;
+            --accent-color: #FC7F03;
+            --accent-color-dark: #c51162;
+            --heart-color: #ff4081;
+            --shadow-color: rgba(224, 64, 251, 0.1);
+            --font-primary: 'Comic Neue', sans-serif;
+            --font-secondary: 'Playfair Display', serif;
+            --font-creative: 'Comic Neue', cursive, sans-serif;
+            --aurora-1: #1a1a2e;
+            --aurora-2: #16213e;
+            --aurora-3: #0f3460;
+            --aurora-4: #e94560;
+            --aurora-5: #c51162;
+        }
+
+        /* --- Base Setup --- */
+        body {
+            font-family: var(--font-primary);
+            margin: 0;
+            padding: 0;
+            color: var(--text-color);
+            background-color: var(--primary-color);
+            overflow-x: hidden;
+            cursor: none; /* Custom cursor will handle visibility */
+        }
+        
+        * {
+            -webkit-tap-highlight-color: transparent;
+        }
+
+       
+        #scroll-progress-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 0%;
+            height: 0.3125em;
+            background: linear-gradient(to right, var(--accent-color), var(--heart-color));
+            z-index: 9999;
+            transition: width 0.1s ease-out, opacity 0.5s ease-out; /* Added opacity transition */
+        }
+         /* --- Aurora Background --- */
+        #aurora-background {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(125deg, var(--aurora-1), var(--aurora-2), var(--aurora-3), var(--aurora-4), var(--aurora-5));
+            background-size: 400% 400%;
+            animation: gradient-animation 25s ease infinite;
+            z-index: -2;
+        }
+        
+        @keyframes gradient-animation {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+        @keyframes glowPulse {
+            0%, 100% {
+              box-shadow: 0 0 25px rgba(224, 64, 251, 0.3), 0 0 40px rgba(252, 127, 3, 0.15);
+              }
+            50% {
+              box-shadow: 0 0 35px rgba(224, 64, 251, 0.6), 0 0 60px rgba(252, 127, 3, 0.25);
+              }
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            position: relative;
+            z-index: 2;
+        }
+
+        /* --- MODIFIED: Preloader --- */
+        #preloader {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--primary-color);
+            z-index: 10000;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            color: var(--accent-color);
+            gap: 20px;
+            overflow: hidden; /* Hide ECG overflow */
+        }
+        
+        #preloader-heart-container {
+            position: relative;
+            width: 120px;
+            height: 120px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        #preloader-heart {
+            width: 100px;
+            height: 100px;
+            color: var(--heart-color);
+            filter: drop-shadow(0 0 10px var(--heart-color));
+            opacity: 0; /* Animated with GSAP */
+            transform-origin: center center;
+        }
+        
+        #ecg-container {
+            position: absolute;
+            width: 100vw;
+            height: 120px;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 1; /* Ensure it’s above the preloader background but below the heart */
+        }
+        #ecg-line {
+            fill: none;
+            stroke: var(--accent-color);
+            stroke-width: 3;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+            opacity: 0.6;
+        }
+        #ecg-container, .loader-text, #loader-progress {
+            opacity: 0; /* Hidden initially */
+            transition: opacity 0.3s ease;
+        }
+        #preloader-heart-container {
+            z-index: 2; /* Ensure heart and play button are above ECG */
+        }
+
+        .loader-text {
+            font-family: var(--font-creative);
+            font-size: 1.7em;
+            opacity: 0;
+            text-shadow: 0 0 5px rgba(255,255,255,0.3);
+            text-align: center;
+            margin: 0 1em;
+        }   
+        #loader-progress {
+            font-family: var(--font-creative);
+            font-size: 1.3em;
+            font-weight: 700;
+            color: var(--heading-color);
+            opacity: 0;
+        }
+
+        /* --- Custom Cursor --- */
+        #custom-cursor {
+            position: fixed;
+            width: 25px;
+            height: 25px;
+            border: 2px solid var(--accent-color);
+            border-radius: 50%;
+            pointer-events: none;
+            transform: translate(-50%, -50%);
+            transition: width 0.3s, height 0.3s, background-color 0.3s, opacity 0.3s, backdrop-filter 0.3s;
+            z-index: 9999;
+            backdrop-filter: blur(1px);
+        }
+        body:hover #custom-cursor { opacity: 1; }
+        #custom-cursor.expand {
+            width: 50px;
+            height: 50px;
+            background-color: rgba(224, 64, 251, 0.3);
+        }
+
+        /* --- Floating Hearts Background --- */
+        #hearts-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            pointer-events: none;
+            overflow: hidden;
+        }
+        
+        @keyframes heartGlowPulse {
+            0%, 100% {
+                filter: drop-shadow(0 0 4px var(--particle-heart-color-glow-1)) drop-shadow(0 0 8px var(--particle-heart-color-glow-2));
+            }
+            50% {
+                filter: drop-shadow(0 0 8px var(--particle-heart-color-glow-1)) drop-shadow(0 0 16px var(--particle-heart-color-glow-2));
+            }
+        }
+        
+        .heart-particle {
+            position: absolute;
+            width: 40px; 
+            height: 40px;
+            animation: heartGlowPulse 3s ease-in-out infinite;
+        }
+        .heart-particle::before, .heart-particle::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 10px;
+            width: 10px;
+            height: 16px;
+            background: var(--particle-heart-color, var(--heart-color));
+            border-radius: 10px 10px 0 0;
+            transform: rotate(-45deg);
+            transform-origin: 0 100%;
+        }
+        .heart-particle::after {
+            left: 0;
+            transform: rotate(45deg);
+            transform-origin: 100% 100%;
+        }
+        
+        /* --- General Layout & Typography --- */
+        header {
+            text-align: center;
+            padding: 100px 0 60px;
+            position: relative;
+        }
+        header h1 {
+            font-family: var(--font-creative);
+            font-size: 3.5em;
+            max-width: 90%;             
+            color: var(--heading-color);
+            font-weight: 700;
+            letter-spacing: 2px;
+            text-shadow: 0 0 15px rgba(224, 64, 251, 0.4);
+            margin: 0 0.3em;
+            padding: 0.5em 1em;
+            background: -webkit-linear-gradient(top left, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.02));
+            background: linear-gradient(to bottom right, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.02));
+            border: 2px solid var(--accent-color);
+            border-radius: 20px;
+            box-shadow: 0 0 25px rgba(224, 64, 251, 0.3), 0 0 40px rgba(252, 127, 3, 0.15);
+            display: inline-block;
+            text-align: center;
+            animation: glowPulse 4s ease-in-out infinite;
+            backdrop-filter: blur(4px);
+        }
+        header h1 .char {
+            display: inline-block;
+        }
+        header p {
+            font-size: 1.3em;
+            margin-top: 15px;
+            font-weight: 300;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        h2 {
+            font-family: var(--font-primary);
+            font-size: 2.8em;
+            color: var(--heading-color);
+            text-align: center;
+            margin-top: 0;
+            margin-bottom: 40px;
+            text-shadow: 0 0 10px rgba(224, 64, 251, 0.3);
+        }
+
+        /* --- Card Layout & 3D Effect --- */
+        .card {
+            background-color: var(--card-background);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            margin: 40px 0;
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 10px 40px var(--shadow-color);
+            transition: box-shadow 0.4s ease;
+            transform-style: preserve-3d;
+        }
+        .card:hover {
+            box-shadow: 0 15px 50px rgba(224, 64, 251, 0.25);
+        }
+        
+        .animate-on-scroll {
+            opacity: 0;
+            transform: translateY(50px);
+        }
+
+        #countdown {
+            text-align: center;
+            font-size: 2.6em;
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 20px;
+            perspective: 500px;
+        }
+        #countdown > div {
+            display: flex;
+            flex-direction: column;
+            min-width: 140px;
+            background: rgba(27, 27, 46, 0.7);
+            padding: 20px;
+            border-radius: 15px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        #countdown .value {
+            font-weight: 600;
+            color: #FFDF8E;
+            font-size: 1.85em;
+            line-height: 1;
+        }
+        #countdown #milliseconds {
+            font-size: 1.4em;
+            color: var(--heart-color);
+        }
+        #countdown .label {
+            font-size: 0.8em;
+            text-transform: uppercase;
+            font-weight: 400;
+            margin-top: 10px;
+            letter-spacing: 1px;
+        }
+
+        #message p {
+            font-size: 1.1em;
+            line-height: 1.8;
+            text-align: center;
+        }
+        #message-signature {
+            font-style: italic;
+            margin-top: 25px;
+            white-space: pre-wrap;
+            font-size: 1.2em;
+            color: var(--accent-color);
+        }
+
+        .photo-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+        }
+        .photo-grid .photo-item {
+            border-radius: 12px;
+            overflow: hidden;
+            position: relative;
+            cursor: pointer;
+            aspect-ratio: 1 / 1;
+        }
+        .photo-grid img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.4s ease, filter 0.4s ease;
+        }
+        .photo-grid .photo-item:hover img {
+            transform: scale(1.1);
+            filter: brightness(1.15);
+        }
+        
+        #modal-container {
+            display: none;
+            position: fixed;
+            z-index: 10001;
+            left: 0; top: 0; width: 100%; height: 100%;
+            background-color: rgba(0, 0, 0, 0.85);
+            backdrop-filter: blur(8px);
+            justify-content: center;
+            align-items: center;
+        }
+        #modal-content {
+            position: relative;
+            max-width: 90vw;
+            max-height: 90vh;
+        }
+        #modal-image {
+            max-width: 100%;
+            max-height: 80vh;
+            display: block;
+            border-radius: 15px;
+            box-shadow: 0 0 40px rgba(224, 64, 251, 0.4);
+        }
+        #modal-caption {
+            color: white;
+            text-align: center;
+            margin-top: 20px;
+            font-size: 1.2em;
+            padding: 0 10px;
+        }
+        #close-modal, #modal-prev, #modal-next {
+            position: absolute;
+            cursor: pointer;
+            color: white;
+            font-size: 2.5em;
+            background: rgba(0,0,0,0.4);
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            user-select: none;
+            transition: background-color 0.2s, transform 0.2s;
+        }
+        #close-modal:hover, #modal-prev:hover, #modal-next:hover {
+            background: rgba(224, 64, 251, 0.7);
+            transform: scale(1.1);
+        }
+        #close-modal { top: 15px; right: 15px; font-family: 'Comic Neue', cursive; line-height: 50px;}
+        #modal-prev, #modal-next { top: 50%; transform: translateY(-50%); font-family: 'Comic Neue', cursive;}
+        #modal-prev { left: 15px; }
+        #modal-next { right: 15px; }
+        
+        .timeline {
+            position: relative;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px 0;
+        }
+        .timeline::after {
+            content: '';
+            position: absolute;
+            width: 4px;
+            background-color: var(--accent-color);
+            opacity: 0.3;
+            top: 0;
+            bottom: 0;
+            left: 50%;
+            margin-left: -2px;
+            border-radius: 2px;
+        }
+        .timeline-item {
+            padding: 10px 40px;
+            position: relative;
+            width: 50%;
+            box-sizing: border-box ;
+        }
+        .timeline-item:nth-child(odd) {
+            left: 0;
+            text-align: right;
+        }
+        .timeline-item:nth-child(even) {
+            left: 50%;
+            text-align: left;
+        }
+        .timeline-item::after {
+            content: '';
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            right: -10px;
+            background-color: var(--heading-color);
+            border: 4px solid var(--accent-color);
+            top: 25px;
+            border-radius: 50%;
+            z-index: 1;
+            transition: transform 0.3s ease;
+        }
+        .timeline-item:nth-child(even)::after {
+            left: -10px;
+        }
+        .timeline-item:hover::after {
+            transform: scale(1.2);
+        }
+        .timeline-content {
+            padding: 20px;
+            background: rgba(27, 27, 46, 0.7);
+            border-radius: 10px;
+            position: relative;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        .timeline-content:hover {
+            background: rgba(42, 42, 68, 1);
+        }
+        .timeline-content h3 {
+            margin-top: 0;
+            color: var(--accent-color);
+        }
+        .timeline-content .date {
+            font-size: 0.9em;
+            font-weight: 600;
+            margin-bottom: 8px;
+            display: block;
+        }
+
+        .reasons-container {
+            text-align: center;
+        }
+        #reason-text {
+            font-size: 1.5em;
+            min-height: 80px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            font-style: italic;
+            color: var(--heading-color);
+            transition: opacity 0.4s ease;
+        }
+        #new-reason-btn {
+            background-color: var(--accent-color);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 15px 30px;
+            cursor: pointer;
+            transition: background-color 0.2s, transform 0.2s;
+            font-weight: 600;
+            font-size: 1.1em;
+            margin-top: 20px;
+        }
+        #new-reason-btn:hover {
+            background-color: var(--accent-color-dark);
+            transform: translateY(-3px);
+        }
+        #new-reason-btn:active {
+            transform: translateY(0) scale(0.95);
+        }
+
+        .music-player {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+        }
+        .track-info {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            width: 100%;
+            max-width: 450px;
+        }
+        #track-art {
+            width: 80px;
+            height: 80px;
+            border-radius: 12px;
+            background-size: cover;
+            background-position: center;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            flex-shrink: 0;
+            transition: transform 0.3s ease;
+        }
+        .music-player.is-playing #track-art {
+            transform: scale(1.05);
+        }
+        #track-details { overflow: hidden; }
+        #track-title {
+            font-size: 1.3em;
+            font-weight: 600;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            color: var(--heading-color);
+        }
+        #track-artist { font-size: 1em; color: #b0b0b0; }
+
+        #audio-visualizer {
+            width: 100%;
+            max-width: 450px;
+            height: 60px;
+            display: block;
+        }
+
+        .progress-container {
+            width: 100%;
+            max-width: 450px;
+            height: 6px;
+            background: rgba(0,0,0,0.3);
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        #progress-bar {
+            width: 0;
+            height: 100%;
+            background: var(--accent-color);
+            border-radius: 5px;
+            transition: width 0.1s linear;
+        }
+        .player-controls {
+            display: flex;
+            align-items: center;
+            gap: 25px;
+        }
+        .player-controls button {
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 10px;
+            line-height: 0;
+            transition: transform 0.15s ease;
+        }
+        .player-controls button:active {
+            transform: scale(0.9);
+        }
+
+        .player-controls svg { width: 28px; height: 28px; fill: var(--text-color); transition: fill 0.2s; }
+        .player-controls button:hover svg { fill: var(--heading-color); }
+        #play-pause-btn {
+            background: var(--accent-color);
+            border-radius: 50%;
+            width: 60px;
+            height: 60px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: background-color 0.2s, transform 0.2s;
+        }
+        #play-pause-btn:hover { background: var(--accent-color-dark); transform: scale(1.05); }
+        #play-pause-btn:active {
+            transform: scale(0.95);
+        }
+        #play-pause-btn svg { fill: white; width: 30px; height: 30px; }
+        
+        #wish-wall {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            justify-content: center;
+            margin-bottom: 25px;
+            min-height: 50px;
+        }
+        .wish-bubble {
+            background: rgba(224, 64, 251, 0.1);
+            border: 1px solid rgba(224, 64, 251, 0.3);
+            padding: 10px 18px;
+            border-radius: 25px;
+            font-size: 0.95em;
+            cursor: grab;
+            touch-action: none;
+            user-select: none;
+            position: relative;
+        }
+
+        .wish-bubble.is-dragging {
+            cursor: grabbing;
+            opacity: 0.3;
+            z-index: 1000;
+        }
+        .wish-bubble-clone {
+            position: fixed;
+            pointer-events: none;
+            z-index: 10001;
+            transform: translate(-50%, -50%);
+        }
+        #delete-zone {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%) scale(0.8);
+            width: 80px;
+            height: 80px;
+            background: rgba(255, 23, 68, 0.6);
+            border: 2px dashed #ff1744;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 10000;
+            opacity: 0;
+            pointer-events: none;
+            transition: transform 0.3s ease, opacity 0.3s ease, background-color 0.3s ease;
+        }
+        #delete-zone.visible {
+            opacity: 1;
+            transform: translateX(-50%) scale(1);
+            pointer-events: all;
+        }
+        #delete-zone.over {
+            background: rgba(255, 23, 68, 0.9);
+            transform: translateX(-50%) scale(1.2);
+        }
+        #delete-zone svg {
+            width: 40px;
+            height: 40px;
+            fill: #fff;
+        }
+
+        #wish-form {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin-top: 20px;
+        }
+        #wish-input {
+            flex-grow: 1;
+            max-width: 450px;
+            border: 1px solid rgba(255,255,255,0.2);
+            background-color: rgba(27, 27, 46, 0.7);
+            color: var(--text-color);
+            border-radius: 8px;
+            padding: 14px;
+            font-family: var(--font-primary);
+            font-size: 1em;
+            transition: border-color 0.3s, box-shadow 0.3s;
+        }
+        #wish-input:focus {
+            outline: none;
+            border-color: var(--accent-color);
+            box-shadow: 0 0 10px var(--shadow-color);
+        }
+        #wish-form button {
+            background-color: var(--accent-color);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 14px 25px;
+            cursor: pointer;
+            transition: background-color 0.2s, transform 0.2s;
+            font-weight: 600;
+        }
+        #wish-form button:hover { background-color: var(--accent-color-dark); }
+        #wish-form button:active {
+            transform: scale(0.95);
+        }
+        
+        footer {
+            text-align: center;
+            padding: 50px 20px;
+            font-size: 0.9em;
+            color: var(--text-color);
+            opacity: 0.7;
+            position: relative;
+            z-index: 2;
+        }
+
+        #page-scroll-tracker {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 0%;
+            height: 4px;
+            background: linear-gradient(to right, #ff4081, #FC7F03);
+            z-index: 99999;
+            transition: width 0.2s ease-out, opacity 0.5s ease-out;
+            opacity: 0; /* Start hidden */
+        }
+        .comic-neue {
+            font-family: 'Comic Neue', cursive;
+            font-weight: 700;
+        }
+
+        @media (max-width: 768px) {
+            header h1 { font-size: 3em; }
+            h2 { font-size: 2.2em; }
+            .card { padding: 30px; }
+            #countdown { font-size: 2em; gap: 10px; }
+            #countdown > div { min-width: 100px; padding: 15px; }
+            #wish-form { flex-direction: column; }
+            .timeline::after { left: 30px; }
+            .timeline-item { width: 100%; padding-left: 70px; padding-right: 15px; }
+            .timeline-item:nth-child(odd), .timeline-item:nth-child(even) { left: 0; text-align: left; }
+            .timeline-item::after { left: 20px; }
+        }
+        
+        @media (max-width: 480px) {
+            body { cursor: default; }
+            #custom-cursor { display: none; }
+            header h1 { font-size: 2.5em; }
+            header { padding: 80px 0 40px; }
+            .photo-grid { grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; }
+            #countdown { font-size: 1.2em; }
+            #countdown > div { min-width: 70px; }
+        }
+        
+        body.no-scroll {
+            overflow: hidden;
+        }
+            
+        #play-button {
+            position: absolute;
+            width: 40px;
+            height: 40px;
+            color: var(--heading-color);
+            opacity: 0.8;
+            cursor: pointer;
+            transition: opacity 0.3s ease, transform 0.3s ease;
+        }
+
+        #play-button:hover {
+            opacity: 1;
+            transform: scale(1.1);
+        }
+
+        #preloader-heart-container {
+            position: relative;
+            width: 120px;
+            height: 120px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        #preloader-heart {
+            width: 100px;
+            height: 100px;
+            color: var(--heart-color);
+            filter: drop-shadow(0 0 10px var(--heart-color));
+            opacity: 1; 
+            transform-origin: center center;
+        }
+
+    </style>
+</head>
+<body>
+  
+    <div id="scroll-progress-bar"></div>
+    <div id="page-scroll-tracker"></div>
+    <div id="aurora-background"></div>
+    <div id="hearts-container"></div>
+    <div id="custom-cursor"></div>
+
+    <div id="preloader">
+        <div id="preloader-heart-container">
+            <svg id="preloader-heart" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+            </svg>
+            <svg id="play-button" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M8 5v14l11-7z"/>
+            </svg>
+        </div>
+        <svg id="ecg-container" viewBox="0 0 400 120" preserveAspectRatio="xMidYMid slice">
+            <defs>
+                <clipPath id="ecg-mask">
+                    <rect id="ecg-mask-rect" x="-400" y="0" width="400" height="120" />
+                </clipPath>
+            </defs>
+            <path id="ecg-path" d="M -80,20 H 130 L 150,0 L 170,55 L 180,15 L 190,25 L 210,20 H 420" />
+            <g clip-path="url(#ecg-mask)">
+                <use href="#ecg-path" id="ecg-line" />
+            </g>
+        </svg>
+        <div class="loader-text">Preparing something special...</div>
+        <div id="loader-progress">0%</div>
+    </div>
+    <audio id="heartbeat-audio" loop>
+        <source src="assets/audio/heartbeat.mp3" type="audio/mpeg">
+    </audio>
+    
+    <div id="content-wrapper" style="visibility: hidden;">
+        <header id="main-header">
+            <h1 id="main-heading"></h1>
+            <p id="header-subtitle"></p>
+        </header>
+
+        <main class="container">
+            <section id="dynamic-section" class="card animate-on-scroll"></section>
+
+            <section id="message" class="card animate-on-scroll">
+                <h2 id="message-heading"></h2>
+                <p id="message-body"></p>
+                <p id="message-signature"></p>
+            </section>
+
+            <section id="journey" class="card animate-on-scroll">
+                <h2>Our Journey Together</h2>
+                <div class="timeline">
+                    </div>
+            </section>
+
+            <section id="gallery" class="card animate-on-scroll">
+                <h2>Our Cherished Moments</h2>
+                <div id="photo-grid" class="photo-grid"></div>
+            </section>
+            
+            <section id="reasons" class="card animate-on-scroll">
+                <h2>A Few Reasons Why I Love You</h2>
+                <div class="reasons-container">
+                    <p id="reason-text">Click the button to see a reason!</p>
+                    <button id="new-reason-btn">Show Me Another</button>
+                </div>
+            </section>
+
+            <section id="playlist" class="card animate-on-scroll">
+                <h2>Our Playlist</h2>
+                <div class="music-player">
+                    <div class="track-info">
+                        <div id="track-art"></div>
+                        <div id="track-details">
+                            <div id="track-title"></div>
+                            <div id="track-artist"></div>
+                        </div>
+                    </div>
+                    <canvas id="audio-visualizer"></canvas>
+                    <div class="progress-container">
+                        <div id="progress-bar"></div>
+                    </div>
+                    <div class="player-controls">
+                        <button id="prev-btn" title="Previous">
+                            <svg viewBox="0 0 24 24"><path d="M6 6h2v12H6zm3.5 6l8.5 6V6z"></path></svg>
+                        </button>
+                        <button id="play-pause-btn" title="Play/Pause">
+                            <svg id="play-pause-icon" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"></path></svg>
+                        </button>
+                        <button id="next-btn" title="Next">
+                           <svg viewBox="0 0 24 24"><path d="M16 6h2v12h-2zm-3.5 6l-8.5 6V6z"></path></svg>
+                        </button>
+                    </div>
+                </div>
+            </section>
+
+            <section id="wish-corner" class="card animate-on-scroll">
+                <h2>Leave a Little Wish for Our Future</h2>
+                <div id="wish-wall"></div>
+                <form id="wish-form" action="https://formspree.io/f/mvgrlbaq" method="POST">
+                    <input type="text" id="wish-input" name="wish" placeholder="e.g., Let's visit Japan together!" autocomplete="off" required>
+                    <button type="submit">Add Wish ✨</button>
+                </form>
+                 <p id="form-status" style="text-align: center; margin-top: 15px;"></p>
+            </section>
+        </main>
+
+        <footer id="main-footer">
+            <p></p>
+        </footer>
+    </div>
+    
+    <div id="delete-zone">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"></path></svg>
+    </div>
+
+    <div id="modal-container">
+        <div id="modal-content">
+            <span id="close-modal" title="Close">&times;</span>
+            <img id="modal-image" src="" alt="Gallery Image">
+            <p id="modal-caption"></p>
+            <button id="modal-prev" title="Previous image">&lt;</button>
+            <button id="modal-next" title="Next image">&gt;</button>
+        </div>
+    </div>
+
+    <audio id="audio-player" crossOrigin="anonymous"></audio>
+
+    <script>
+    // =================================================================================
+    // --- FORMSPREE CONFIGURATION ---
+    // =================================================================================
+    // This is now your live endpoint.
+    const formspreeEndpoint = "https://formspree.io/f/mvgrlbaq";
+    // =================================================================================
+
+
+    document.addEventListener('DOMContentLoaded', () => {
+
+        // =================================================================================
+        // --- CONFIGURATION & DATA ---
+        // =================================================================================
+        const CONFIG = {
+            herName: "Priya",
+            yourName: "Rohan",
+            birthday: { month: 7, day: 4, year: 2025, time: "00:00:00" },
+            headerSubtitle: "To the one who illuminates my Universe...",
+            message: {
+                heading: "A Message From My Heart",
+                body: "My dearest Priya, as we count down to your special day, I find myself reflecting on the incredible journey we've shared. You are the melody to my life's song, the color in my monochrome world. Every moment with you is a treasure I hold dear. You are not just my love, but my anchor, my inspiration, and my greatest adventure. I love you more than all the stars in the sky.",
+                signature: "Forever and always,"
+            },
+            journey: [
+                { date: "Oct 15, 2021", title: "Our First Hello", description: "The day our story began. I still remember your smile.", image: "assets/images/journey1.jpg" },
+                { date: "Feb 14, 2022", title: "Our First Trip", description: "Exploring the coast and realizing this was something special.", image: "assets/images/journey2.jpg" },
+                { date: "Dec 25, 2023", title: "A Holiday to Remember", description: "That cozy Christmas that felt like a scene from a movie.", image: "assets/images/journey3.jpg" },
+                { date: "May 01, 2024", title: "We Got Our Dog!", description: "Welcoming our furry little chaos-maker, Bruno, into our lives.", image: "assets/images/journey4.jpg" },
+            ],
+            gallery: [
+                { src: "assets/images/photo1.jpg", alt: "Memory 1", caption: "That beautiful day at the beach." },
+                { src: "assets/images/photo2.jpg", alt: "Memory 2", caption: "Our first anniversary celebration." },
+                { src: "assets/images/photo3.png", alt: "Memory 3", caption: "Silly faces and endless laughter." },
+                { src: "assets/images/photo4.jpg", alt: "Memory 4", caption: "Exploring the mountains together." },
+                { src: "assets/images/photo5.png", alt: "Memory 5", caption: "A cozy evening at home." },
+                { src: "assets/images/photo6.jpg", alt: "Memory 6", caption: "The day we brought our puppy home." }
+            ],
+            reasons: [
+                "because of the way you laugh at my silly jokes.",
+                "for your kindness to everyone you meet.",
+                "because you make me feel like I can achieve anything.",
+                "for the way your eyes light up when you talk about your passions.",
+                "because you make the ordinary moments feel extraordinary.",
+                "for always knowing how to comfort me.",
+                "because you're the most intelligent person I know.",
+                "for being my partner in every sense of the word.",
+                "because of your incredible strength and resilience.",
+                "for loving me for exactly who I am."
+            ],
+            playlist: [
+                { title: "Perfect", artist: "Ed Sheeran", src: "assets/audio/song1.mp3", art: "assets/images/photo1.jpg" },
+                { title: "A Thousand Years", artist: "Christina Perri", src: "assets/audio/song2.mp3", art: "assets/images/photo2.jpg" },
+                { title: "All of Me", artist: "John Legend", src: "assets/audio/song3.mp3", art: "assets/images/photo3.png" }
+            ],
+            footerText: "Crafted with LOVE ❤‍🔥, Code 👨🏻‍💻, and Countless Glasses of Water 🚰 for you 𝙎𝙃𝙍𝙀𝙔𝙐𝙐︎ 💞           ©2025"
+        };
+
+
+        // =================================================================================
+        // --- APPLICATION LOGIC ---
+        // =================================================================================
+        
+        window.App = {
+            state: {
+                isBirthday: false,
+                wishes: [], // To hold wishes locally
+                gallery: { data: [], currentIndex: 0 },
+                playlist: { 
+                    data: [], 
+                    currentIndex: 0, 
+                    isPlaying: false, 
+                    audioContext: null, 
+                    analyser: null,
+                    beatThreshold: 60,
+                    lastBeatTime: 0 
+                },
+                countdownInterval: null,
+                preloaderTimeline: null,
+            },
+            elements: {},
+            
+            init() {
+                console.log("Initializing Special Day App...");
+                gsap.registerPlugin(ScrollTrigger, TextPlugin);
+                this.cacheDOMElements();
+                this.checkIfBirthday();
+                this.UI.init();
+                this.Animations.initPreloader();
+            },
+
+            start() {
+                this.populateTextContent();
+                this.Content.setupDynamicContent();
+                this.Content.loadWishesFromLocalStorage(); // Load wishes on start
+                this.Content.setupGallery();
+                this.Content.setupJourneyTimeline();
+                this.Content.setupReasonsGenerator();
+                this.Audio.setupMusicPlayer();
+                this.UI.setupEventListeners();
+                this.Animations.initMainPageAnimations();
+                if (this.state.isBirthday) {
+                    this.Celebration.start();
+                } else {
+                    this.Content.startCountdown();
+                }
+            },
+
+            cacheDOMElements() {
+                this.elements = {
+                    preloader: document.getElementById('preloader'),
+                    loaderText: document.querySelector('.loader-text'),
+                    loaderProgress: document.getElementById('loader-progress'),
+                    preloaderHeart: document.getElementById('preloader-heart'),
+                    ecgMask: document.getElementById('ecg-mask-rect'),
+                    contentWrapper: document.getElementById('content-wrapper'),
+                    mainHeading: document.getElementById('main-heading'),
+                    headerSubtitle: document.getElementById('header-subtitle'),
+                    dynamicSection: document.getElementById('dynamic-section'),
+                    messageHeading: document.getElementById('message-heading'),
+                    messageBody: document.getElementById('message-body'),
+                    messageSignature: document.getElementById('message-signature'),
+                    journeyContainer: document.querySelector('#journey .timeline'),
+                    photoGrid: document.getElementById('photo-grid'),
+                    reasonText: document.getElementById('reason-text'),
+                    newReasonBtn: document.getElementById('new-reason-btn'),
+                    playlistSection: document.getElementById('playlist'),
+                    wishForm: document.getElementById('wish-form'),
+                    wishInput: document.getElementById('wish-input'),
+                    wishWall: document.getElementById('wish-wall'),
+                    deleteZone: document.getElementById('delete-zone'),
+                    formStatus: document.getElementById('form-status'),
+                    mainFooter: document.querySelector('#main-footer p'),
+                    modal: {
+                        container: document.getElementById('modal-container'),
+                        content: document.getElementById('modal-content'),
+                        image: document.getElementById('modal-image'),
+                        caption: document.getElementById('modal-caption'),
+                        closeBtn: document.getElementById('close-modal'),
+                        prevBtn: document.getElementById('modal-prev'),
+                        nextBtn: document.getElementById('modal-next'),
+                    },
+                    audio: {
+                        player: document.getElementById('audio-player'),
+                        trackArt: document.getElementById('track-art'),
+                        trackTitle: document.getElementById('track-title'),
+                        trackArtist: document.getElementById('track-artist'),
+                        playPauseBtn: document.getElementById('play-pause-btn'),
+                        playPauseIcon: document.getElementById('play-pause-icon'),
+                        prevBtn: document.getElementById('prev-btn'),
+                        nextBtn: document.getElementById('next-btn'),
+                        progressBar: document.getElementById('progress-bar'),
+                        progressContainer: document.querySelector('.progress-container'),
+                        visualizer: document.getElementById('audio-visualizer'),
+                    },
+                };
+            },
+            
+            checkIfBirthday() {
+                const today = new Date();
+                const { month, day, year } = CONFIG.birthday;
+                const birthdayDate = new Date(year, month - 1, day);
+                this.state.isBirthday = today.getTime() >= birthdayDate.getTime();
+                console.log(`Is it her birthday yet? ${this.state.isBirthday}`);
+            },
+
+            populateTextContent() {
+                document.title = `A Special Day for ${CONFIG.herName}!`;
+                this.elements.headerSubtitle.textContent = CONFIG.headerSubtitle;
+                this.elements.messageHeading.textContent = CONFIG.message.heading;
+                this.elements.messageBody.textContent = CONFIG.message.body;
+                this.elements.messageSignature.textContent = `${CONFIG.message.signature}\n${CONFIG.yourName}`;
+                this.elements.mainFooter.textContent = CONFIG.footerText;
+            },
+
+            UI: {
+                init() { this.initCustomCursor(); this.initHeartParticles(); },
+                
+                setupEventListeners() {
+                    App.elements.modal.closeBtn.addEventListener('click', () => this.closeModal());
+                    App.elements.modal.prevBtn.addEventListener('click', () => App.Content.showPrevImage());
+                    App.elements.modal.nextBtn.addEventListener('click', () => App.Content.showNextImage());
+                    App.elements.wishForm.addEventListener('submit', (e) => { 
+                        e.preventDefault(); 
+                        this.handleWishSubmit(e); 
+                    });
+                    App.elements.newReasonBtn.addEventListener('click', () => App.Content.generateNewReason());
+                    document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && App.elements.modal.container.style.display === 'flex') { this.closeModal(); } });
+                    
+                    document.addEventListener('click', (e) => {
+                        if (e.target.closest('a, button, input, .photo-item, .timeline-content, .progress-container')) return;
+                        const clickX = e.clientX;
+                        const clickY = e.clientY;
+                        const pushRadius = 150;
+                        const pushStrength = 80;
+                        const pushDuration = 0.8;
+                        document.querySelectorAll('.heart-particle').forEach(heart => {
+                            const rect = heart.getBoundingClientRect();
+                            const heartX = rect.left + rect.width / 2;
+                            const heartY = rect.top + rect.height / 2;
+                            const dx = heartX - clickX;
+                            const dy = heartY - clickY;
+                            const distance = Math.sqrt(dx * dx + dy * dy);
+                            if (distance < pushRadius) {
+                                const angle = Math.atan2(dy, dx);
+                                const pushAmount = (1 - (distance / pushRadius)) * pushStrength;
+                                const moveX = Math.cos(angle) * pushAmount;
+                                gsap.killTweensOf(heart, "x,rotation");
+                                gsap.to(heart, {
+                                    x: `+=${moveX}`,
+                                    rotation: `+=${gsap.utils.random(-30, 30)}`,
+                                    duration: pushDuration,
+                                    ease: 'power2.out'
+                                });
+                            }
+                        });
+                        this.createClickBurst(clickX, clickY);
+                    });
+                },
+
+                initCustomCursor() {
+                    const cursor = document.getElementById('custom-cursor');
+                    if (window.matchMedia("(pointer: fine)").matches) {
+                        window.addEventListener('mousemove', e => { gsap.to(cursor, { x: e.clientX, y: e.clientY, duration: 0.2, ease: 'power2.out' }); });
+                        document.querySelectorAll('a, button, .photo-item, .timeline-content, .progress-container, input, .wish-bubble').forEach(el => {
+                            el.addEventListener('mouseenter', () => cursor.classList.add('expand'));
+                            el.addEventListener('mouseleave', () => cursor.classList.remove('expand'));
+                        });
+                    } else { cursor.style.display = 'none'; }
+                },
+
+                initHeartParticles() {
+                    const container = document.getElementById('hearts-container');
+                    const heartColors = ['#ff4081', '#ff80ab', '#f50057', '#e91e63', '#d81b60', '#ad1457', '#ff5252', '#ff1744'];
+                    for (let i = 0; i < 60; i++) {
+                        const heart = document.createElement('div');
+                        heart.classList.add('heart-particle');
+                        const size = Math.random() * 35 + 20;
+                        const color = heartColors[Math.floor(Math.random() * heartColors.length)];
+                        heart.style.setProperty('--particle-heart-color', color);
+                        heart.style.setProperty('--particle-heart-color-glow-1', color + '99');
+                        heart.style.setProperty('--particle-heart-color-glow-2', color + '55');
+                        gsap.set(heart, { width: size, height: size, x: `${Math.random() * 100}vw`, y: `105vh`, opacity: Math.random() * 0.5 + 0.3 });
+                        this.animateHeartFloat(heart);
+                        gsap.to(heart, { scale: 1.2, duration: Math.random() * 1 + 1.5, repeat: -1, yoyo: true, ease: 'sine.inOut', delay: Math.random() * 2 });
+                        container.appendChild(heart);
+                    }
+                },
+                animateHeartFloat(heart) {
+                    const duration = Math.random() * 15 + 20;
+                    gsap.to(heart, { y: '-10vh', rotation: 'random(-360, 360)', duration: duration, ease: 'none', onComplete: () => { this.recycleHeart(heart); } });
+                },
+                recycleHeart(heart) {
+                    gsap.killTweensOf(heart, "x,rotation");
+                    const size = Math.random() * 30 + 15;
+                    gsap.set(heart, { x: `${Math.random() * 100}vw`, y: `${gsap.utils.random(100, 105)}vh`, opacity: Math.random() * 0.5 + 0.3, rotation: 0, width: size, height: size });
+                    this.animateHeartFloat(heart);
+                    gsap.to(heart, { scale: 1.2, duration: Math.random() * 1 + 1.5, repeat: -1, yoyo: true, ease: 'sine.inOut', delay: Math.random() * 2 });
+                },
+                createClickBurst(x, y) {
+                    const container = document.getElementById('hearts-container');
+                    const heartColors = ['#ff4081', '#ff80ab', '#f50057', '#ff5252', '#ff1744'];
+                    const burstAmount = 7;
+                    for (let i = 0; i < burstAmount; i++) {
+                        const burstHeart = document.createElement('div');
+                        burstHeart.classList.add('heart-particle');
+                        const size = Math.random() * 10 + 5;
+                        const color = heartColors[Math.floor(Math.random() * heartColors.length)];
+                        burstHeart.style.setProperty('--particle-heart-color', color);
+                        burstHeart.style.setProperty('--particle-heart-color-glow-1', color + '99');
+                        burstHeart.style.setProperty('--particle-heart-color-glow-2', color + '55');
+                        gsap.set(burstHeart, { width: size, height: size, x: x, y: y, opacity: 1 });
+                        container.appendChild(burstHeart);
+                        gsap.to(burstHeart, { x: `+=${gsap.utils.random(-80, 80)}`, y: `+=${gsap.utils.random(-80, 80)}`, scale: 0, opacity: 0, duration: gsap.utils.random(0.8, 1.5), ease: 'power2.out', onComplete: () => burstHeart.remove() });
+                    }
+                },
+
+                openModal(index) {
+                    App.state.gallery.currentIndex = index;
+                    this.updateModalContent();
+                    App.elements.modal.container.style.display = 'flex';
+                    gsap.from(App.elements.modal.content, { scale: 0.8, opacity: 0, duration: 0.4, ease: 'back.out(1.7)' });
+                },
+
+                closeModal() {
+                    gsap.to(App.elements.modal.content, { scale: 0.8, opacity: 0, duration: 0.3, ease: 'power2.in', onComplete: () => { App.elements.modal.container.style.display = 'none'; }});
+                },
+
+                updateModalContent() {
+                    const photo = App.state.gallery.data[App.state.gallery.currentIndex];
+                    const img = App.elements.modal.image;
+                    const caption = App.elements.modal.caption;
+                    gsap.to([img, caption], { opacity: 0, duration: 0.2, onComplete: () => { img.src = photo.src; caption.textContent = photo.caption; gsap.to([img, caption], { opacity: 1, duration: 0.3 }); } });
+                },
+
+                handleWishSubmit(event) {
+                    const form = event.target;
+                    const data = new FormData(form);
+                    const wishText = App.elements.wishInput.value.trim();
+                    const statusEl = App.elements.formStatus;
+                    const buttonEl = form.querySelector('button');
+
+                    if (!wishText) return;
+
+                    buttonEl.disabled = true;
+                    statusEl.textContent = 'Sending...';
+                    statusEl.style.color = 'var(--accent-color)';
+                    
+                    fetch(form.action, { // Use the form's action attribute
+                        method: 'POST',
+                        body: data,
+                        headers: { 'Accept': 'application/json' }
+                    }).then(response => {
+                        if (response.ok) {
+                            statusEl.textContent = "Ouhh I see👀Thanks for the wish! ❤️";
+                            statusEl.style.color = '#4CAF50';
+                            
+                            const newWish = { id: Date.now(), text: wishText };
+                            App.state.wishes.push(newWish);
+                            App.Content.saveWishesToLocalStorage();
+                            this.createWishBubble(newWish.text, newWish.id);
+                            
+                            form.reset();
+                        } else {
+                            statusEl.textContent = "Oops! There was a problem sending your wish.";
+                            statusEl.style.color = 'var(--heart-color)';
+                        }
+                    }).catch(error => {
+                        statusEl.textContent = "Oops! There was a network problem.";
+                        statusEl.style.color = 'var(--heart-color)';
+                    }).finally(() => {
+                        buttonEl.disabled = false;
+                        setTimeout(() => { statusEl.textContent = '' }, 5000);
+                    });
+                },
+
+                createWishBubble(text, id) {
+                    const bubble = document.createElement('div');
+                    bubble.classList.add('wish-bubble');
+                    bubble.textContent = text;
+                    bubble.dataset.id = id;
+
+                    App.elements.wishWall.appendChild(bubble);
+                    gsap.from(bubble, { scale: 0.5, opacity: 0, duration: 0.5, ease: 'back.out(1.7)' });
+                    
+                    this.addDragToDeleteListeners(bubble);
+                },
+                
+                addDragToDeleteListeners(element) {
+                    let longPressTimer;
+                    let isDragging = false;
+                    let clone = null;
+                    const deleteZone = App.elements.deleteZone;
+
+                    const onPointerDown = (e) => {
+                        longPressTimer = setTimeout(() => {
+                            isDragging = true;
+                            clone = element.cloneNode(true);
+                            clone.classList.add('wish-bubble-clone');
+                            document.body.appendChild(clone);
+                            
+                            const startX = e.clientX || e.touches[0].clientX;
+                            const startY = e.clientY || e.touches[0].clientY;
+                            gsap.set(clone, { left: startX, top: startY });
+
+                            element.classList.add('is-dragging');
+                            deleteZone.classList.add('visible');
+                            
+                            if (navigator.vibrate) navigator.vibrate(50);
+                        }, 500);
+
+                        window.addEventListener('pointermove', onPointerMove);
+                        window.addEventListener('pointerup', onPointerUp);
+                    };
+
+                    const onPointerMove = (e) => {
+                        if (isDragging && clone) {
+                            const moveX = e.clientX || e.touches[0].clientX;
+                            const moveY = e.clientY || e.touches[0].clientY;
+                            gsap.to(clone, { left: moveX, top: moveY, duration: 0.1 });
+                            
+                            const deleteRect = deleteZone.getBoundingClientRect();
+                            if (moveX > deleteRect.left && moveX < deleteRect.right &&
+                                moveY > deleteRect.top && moveY < deleteRect.bottom) {
+                                deleteZone.classList.add('over');
+                            } else {
+                                deleteZone.classList.remove('over');
+                            }
+                        }
+                    };
+
+                    const onPointerUp = (e) => {
+                        clearTimeout(longPressTimer);
+                        if (isDragging && clone) {
+                            const idToDelete = Number(element.dataset.id);
+                            
+                            if (deleteZone.classList.contains('over')) {
+                                const wishIndex = App.state.wishes.findIndex(w => w.id === idToDelete);
+                                if (wishIndex > -1) {
+                                    const [deletedWish] = App.state.wishes.splice(wishIndex, 1);
+                                    App.Content.saveWishesToLocalStorage();
+                                    this.notifyOfDeletion(deletedWish.text);
+                                }
+                                gsap.to(element, { scale: 0, opacity: 0, duration: 0.3, onComplete: () => element.remove() });
+                            } else {
+                                element.classList.remove('is-dragging');
+                            }
+                            clone.remove();
+                            deleteZone.classList.remove('visible', 'over');
+                        }
+                        isDragging = false;
+                        window.removeEventListener('pointermove', onPointerMove);
+                        window.removeEventListener('pointerup', onPointerUp);
+                    };
+
+                    element.addEventListener('pointerdown', onPointerDown);
+                },
+                
+                notifyOfDeletion(wishText) {
+                    const formData = new FormData();
+                    formData.append('_subject', `A wish was deleted!`);
+                    formData.append('message', `The following wish was deleted from the page by a user: "${wishText}"`);
+                    
+                    fetch(formspreeEndpoint, {
+                        method: 'POST',
+                        body: formData,
+                        headers: { 'Accept': 'application/json' }
+                    }).catch(err => console.error('Could not notify of deletion.', err));
+                }
+
+            },
+            Content: {
+                loadWishesFromLocalStorage() {
+                    const savedWishes = localStorage.getItem('userWishes');
+                    if (savedWishes) {
+                        App.state.wishes = JSON.parse(savedWishes);
+                        App.state.wishes.forEach(wish => {
+                            App.UI.createWishBubble(wish.text, wish.id);
+                        });
+                    }
+                },
+                
+                saveWishesToLocalStorage() {
+                    localStorage.setItem('userWishes', JSON.stringify(App.state.wishes));
+                },
+
+                setupDynamicContent() {
+                    if (App.state.isBirthday) {
+                        App.elements.mainHeading.textContent = `Happy Birthday, My Dearest ${CONFIG.herName}!`;
+                        App.elements.dynamicSection.innerHTML = `<div id="birthday-message"><h2>Today is YOUR day!</h2><p style="text-align:center; font-size:1.2em;">Wishing you all the happiness in the universe. Let's celebrate! Balle balleeh yaayyy 🥳🎉</p></div>`;
+                    } else {
+                        App.elements.mainHeading.textContent = `Countdown for My Dearest ${CONFIG.herName}`;
+                        App.elements.dynamicSection.innerHTML = `<h2>Countdown to Your Special Day</h2><div id="countdown"><div><span id="days" class="value">00</span><span class="label">Days</span></div><div><span id="hours" class="value">00</span><span class="label">Hours</span></div><div><span id="minutes" class="value">00</span><span class="label">Minutes</span></div><div><span id="seconds" class="value">00</span><span class="label">Seconds</span></div><div><span id="milliseconds" class="value">000</span><span class="label">Milliseconds</span></div></div>`;
+                    }
+                },
+                startCountdown() {
+                    if (App.state.isBirthday) return;
+                    const { month, day, year, time } = CONFIG.birthday;
+                    const countDate = new Date(`${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}T${time}`).getTime();
+                    const els = { days: document.getElementById('days'), hours: document.getElementById('hours'), minutes: document.getElementById('minutes'), seconds: document.getElementById('seconds'), milliseconds: document.getElementById('milliseconds') };
+                    if (!els.days) return;
+                    function update() {
+                        const now = new Date().getTime();
+                        const gap = countDate - now;
+                        if (gap <= 0) { cancelAnimationFrame(App.state.countdownInterval); location.reload(); return; }
+                        els.days.innerText = Math.floor(gap / 86400000).toString().padStart(2, '0');
+                        els.hours.innerText = Math.floor((gap % 86400000) / 3600000).toString().padStart(2, '0');
+                        els.minutes.innerText = Math.floor((gap % 3600000) / 60000).toString().padStart(2, '0');
+                        els.seconds.innerText = Math.floor((gap % 60000) / 1000).toString().padStart(2, '0');
+                        els.milliseconds.innerText = (gap % 1000).toString().padStart(3, '0');
+                        App.state.countdownInterval = requestAnimationFrame(update);
+                    }
+                    update();
+                },
+                setupGallery() {
+                    App.state.gallery.data = CONFIG.gallery;
+                    const grid = App.elements.photoGrid;
+                    grid.innerHTML = '';
+                    CONFIG.gallery.forEach((photo, index) => {
+                        const item = document.createElement('div');
+                        item.className = 'photo-item';
+                        const img = document.createElement('img');
+                        img.src = photo.src; img.alt = photo.alt; img.dataset.index = index;
+                        item.appendChild(img);
+                        item.addEventListener('click', () => App.UI.openModal(index));
+                        grid.appendChild(item);
+                    });
+                },
+                showPrevImage() {
+                    const len = App.state.gallery.data.length;
+                    App.state.gallery.currentIndex = (App.state.gallery.currentIndex - 1 + len) % len;
+                    App.UI.updateModalContent();
+                },
+                showNextImage() {
+                    const len = App.state.gallery.data.length;
+                    App.state.gallery.currentIndex = (App.state.gallery.currentIndex + 1) % len;
+                    App.UI.updateModalContent();
+                },
+                setupJourneyTimeline() {
+                    const container = App.elements.journeyContainer;
+                    container.innerHTML = '';
+                    CONFIG.journey.forEach(item => {
+                        const timelineItem = document.createElement('div');
+                        timelineItem.className = 'timeline-item';
+                        const content = document.createElement('div');
+                        content.className = 'timeline-content';
+                        content.innerHTML = `<span class="date">${item.date}</span><h3>${item.title}</h3><p>${item.description}</p>`;
+                        const imageIndexInGallery = CONFIG.gallery.findIndex(p => p.src === item.image);
+                        if (imageIndexInGallery !== -1) {
+                            content.style.cursor = 'pointer';
+                            content.addEventListener('click', () => App.UI.openModal(imageIndexInGallery));
+                        }
+                        timelineItem.appendChild(content);
+                        container.appendChild(timelineItem);
+                    });
+                },
+                setupReasonsGenerator() { this.generateNewReason(); },
+                generateNewReason() {
+                    const reason = CONFIG.reasons[Math.floor(Math.random() * CONFIG.reasons.length)];
+                    const textEl = App.elements.reasonText;
+                    gsap.to(textEl, { opacity: 0, duration: 0.3, onComplete: () => { textEl.textContent = `...${reason}`; gsap.to(textEl, { opacity: 1, duration: 0.3 }); }});
+                }
+            },
+
+            Audio: {
+                playIconPath: "M8 5v14l11-7z",
+                pauseIconPath: "M6 19h4V5H6v14zm8-14v14h4V5h-4z",
+                setupMusicPlayer() {
+                    const { playlist } = CONFIG;
+                    if (!playlist || playlist.length === 0) { App.elements.playlistSection.style.display = 'none'; return; }
+                    App.state.playlist.data = playlist;
+                    this.loadTrack(0);
+                    App.elements.audio.playPauseBtn.addEventListener('click', () => this.togglePlayPause());
+                    App.elements.audio.prevBtn.addEventListener('click', () => this.playPrev());
+                    App.elements.audio.nextBtn.addEventListener('click', () => this.playNext());
+                    App.elements.audio.player.addEventListener('ended', () => this.playNext());
+                    App.elements.audio.player.addEventListener('timeupdate', (e) => this.updateProgress(e));
+                    App.elements.audio.progressContainer.addEventListener('click', (e) => this.setProgress(e));
+                },
+                initAudioVisualizer() {
+                    if (App.state.playlist.audioContext) return;
+                    const AudioContext = window.AudioContext || window.webkitAudioContext;
+                    App.state.playlist.audioContext = new AudioContext();
+                    const source = App.state.playlist.audioContext.createMediaElementSource(App.elements.audio.player);
+                    App.state.playlist.analyser = App.state.playlist.audioContext.createAnalyser();
+                    source.connect(App.state.playlist.analyser);
+                    App.state.playlist.analyser.connect(App.state.playlist.audioContext.destination);
+                    App.state.playlist.analyser.fftSize = 128;
+                    const bufferLength = App.state.playlist.analyser.frequencyBinCount;
+                    const dataArray = new Uint8Array(bufferLength);
+                    const canvas = App.elements.audio.visualizer;
+                    const ctx = canvas.getContext('2d');
+                    const { width, height } = canvas;
+                    
+                    function draw() {
+                        requestAnimationFrame(draw);
+                        App.state.playlist.analyser.getByteFrequencyData(dataArray);
+                        ctx.clearRect(0, 0, width, height);
+                        const barWidth = (width / bufferLength) * 1.5;
+                        let x = 0;
+                        let sum = 0;
+                        for (let i = 0; i < bufferLength; i++) {
+                            const barHeight = (dataArray[i] / 255) * height * 0.8;
+                            sum += dataArray[i];
+                            const gradient = ctx.createLinearGradient(0, height, 0, height - barHeight);
+                            gradient.addColorStop(0, 'rgba(224, 64, 251, 0.7)');
+                            gradient.addColorStop(1, 'rgba(255, 64, 129, 0.9)');
+                            ctx.fillStyle = gradient;
+                            ctx.fillRect(x, height - barHeight, barWidth, barHeight);
+                            x += barWidth + 2;
+                        }
+
+                        const pState = App.state.playlist;
+                        if (pState.isPlaying) {
+                            const avg = sum / bufferLength;
+                            const now = Date.now();
+                            if (avg > pState.beatThreshold && now - pState.lastBeatTime > 200) {
+                                pState.lastBeatTime = now;
+                                const hearts = document.querySelectorAll('.heart-particle');
+                                if (hearts.length > 0) {
+                                    gsap.to(hearts, { scale: 1.3, duration: 0.15, yoyo: true, repeat: 1, ease: 'power2.inOut', stagger: 0.02 });
+                                }
+                            }
+                        }
+                    }
+                    draw();
+                },
+                loadTrack(index) {
+                    const track = App.state.playlist.data[index];
+                    App.elements.audio.trackTitle.textContent = track.title;
+                    App.elements.audio.trackArtist.textContent = track.artist;
+                    App.elements.audio.trackArt.style.backgroundImage = `url('${track.art}')`;
+                    App.elements.audio.player.src = track.src;
+                },
+                togglePlayPause() {
+                    if (App.state.playlist.audioContext && App.state.playlist.audioContext.state === 'suspended') { App.state.playlist.audioContext.resume(); }
+                    App.state.playlist.isPlaying ? this.pauseTrack() : this.playTrack();
+                },
+                playTrack() {
+                    App.elements.audio.player.play();
+                    App.elements.audio.playPauseIcon.querySelector('path').setAttribute('d', this.pauseIconPath);
+                    document.querySelector('.music-player').classList.add('is-playing');
+                    App.state.playlist.isPlaying = true;
+                    if (!App.state.playlist.audioContext) { this.initAudioVisualizer(); }
+                },
+                pauseTrack() {
+                    App.elements.audio.player.pause();
+                    App.elements.audio.playPauseIcon.querySelector('path').setAttribute('d', this.playIconPath);
+                    document.querySelector('.music-player').classList.remove('is-playing');
+                    App.state.playlist.isPlaying = false;
+                },
+                playPrev() {
+                    const len = App.state.playlist.data.length;
+                    App.state.playlist.currentIndex = (App.state.playlist.currentIndex - 1 + len) % len;
+                    this.loadTrack(App.state.playlist.currentIndex);
+                    this.playTrack();
+                },
+                playNext() {
+                    App.state.playlist.currentIndex = (App.state.playlist.currentIndex + 1) % App.state.playlist.data.length;
+                    this.loadTrack(App.state.playlist.currentIndex);
+                    this.playTrack();
+                },
+                updateProgress(e) {
+                    const { duration, currentTime } = e.srcElement;
+                    if (duration) { App.elements.audio.progressBar.style.width = `${(currentTime / duration) * 100}%`; }
+                },
+                setProgress(e) {
+                    const width = App.elements.audio.progressContainer.clientWidth;
+                    const clickX = e.offsetX;
+                    const duration = App.elements.audio.player.duration;
+                    if (duration) { App.elements.audio.player.currentTime = (clickX / width) * duration; }
+                }
+            },
+            
+            Animations: {
+                initPreloader() {
+                    const { preloader, preloaderHeart, loaderText, loaderProgress } = App.elements;
+                    const ecgContainer = document.getElementById('ecg-container');
+                    const playButton = document.getElementById('play-button');
+                    const heartbeatAudio = document.getElementById('heartbeat-audio');
+                    const loadingDuration = 4;
+
+                    document.body.classList.add('no-scroll');
+                    gsap.set([loaderText, loaderProgress, ecgContainer], { opacity: 0 });
+
+                    playButton.addEventListener('click', () => {
+                        gsap.to(playButton, { opacity: 0, duration: 0.3, onComplete: () => { playButton.style.display = 'none'; } });
+                        heartbeatAudio.play().catch(e => {
+                            console.error("Audio playback failed:", e);
+                            loaderText.textContent = "Audio unavailable, but we're still preparing!";
+                        });
+                        if (navigator.vibrate) { navigator.vibrate([200, 100, 200, 100, 200, 100, 200]); }
+
+                        App.state.preloaderTimeline = gsap.timeline({
+                            onComplete: () => {
+                                heartbeatAudio.pause();
+                                heartbeatAudio.currentTime = 0;
+                                if (navigator.vibrate) { navigator.vibrate(0); }
+                                gsap.to(preloader, {
+                                    opacity: 0,
+                                    duration: 1.0,
+                                    ease: 'power2.inOut',
+                                    onComplete: () => {
+                                        preloader.style.display = 'none';
+                                        document.body.classList.remove('no-scroll');
+                                        App.start();
+                                    }
+                                });
+                            }
+                        });
+
+                        App.state.preloaderTimeline
+                            .to([loaderText, loaderProgress, ecgContainer], { opacity: 1, duration: 0.5, ease: 'power1.out' })
+                            .to(loaderProgress, {
+                                textContent: 100,
+                                roundProps: "textContent",
+                                duration: loadingDuration,
+                                ease: "power1.out",
+                                onUpdate: function() { this.targets()[0].innerText = `${this.targets()[0].textContent}%`; }
+                            }, 0);
+
+                        const beatLoop = gsap.timeline({ repeat: -1 }).to(preloaderHeart, { scale: 1.15, duration: 0.15, ease: 'power1.inOut' }).to(preloaderHeart, { scale: 1.0, duration: 0.6, ease: 'power1.inOut' });
+                        const ecgLoop = gsap.timeline({ repeat: -1 }).fromTo(App.elements.ecgMask, { attr: { x: -400 } }, { attr: { x: 400 }, duration: 1.5, ease: 'linear' });
+
+                        App.state.preloaderTimeline.add(beatLoop, 0.5);
+                        App.state.preloaderTimeline.add(ecgLoop, 0.5);
+
+                        setTimeout(() => { App.state.preloaderTimeline.progress(1); }, loadingDuration * 1000 + 500);
+                    });
+                },
+                initMainPageAnimations() {
+                    gsap.to(App.elements.contentWrapper, { visibility: 'visible', duration: 0 });
+                    const mainHeading = App.elements.mainHeading;
+                    const text = mainHeading.textContent;
+                    mainHeading.innerHTML = '';
+                    text.split('').forEach(char => {
+                        const span = document.createElement('span');
+                        span.className = 'char';
+                        span.innerHTML = char === ' ' ? '&nbsp;' : char;
+                        mainHeading.appendChild(span);
+                    });
+                    const tl = gsap.timeline();
+                    tl.from('.char', { y: 50, opacity: 0, stagger: 0.05, duration: 1, ease: 'back.out(1.7)' })
+                      .from('#header-subtitle', { y: 20, opacity: 0, duration: 0.8, ease: 'power2.out' }, '-=0.5');
+
+                    document.querySelectorAll('.animate-on-scroll').forEach(el => {
+                        gsap.set(el, { opacity: 0, y: 50 });
+                        ScrollTrigger.create({
+                            trigger: el,
+                            start: 'top 85%',
+                            end: 'bottom 15%',
+                            onEnter: () => gsap.to(el, { opacity: 1, y: 0, duration: 0.8, ease: 'power3.out' }),
+                            onLeaveBack: () => gsap.to(el, { opacity: 0, y: 50, duration: 0.6, ease: 'power3.in' }),
+                        });
+                        el.addEventListener('mousemove', (e) => {
+                            const { left, top, width, height } = el.getBoundingClientRect();
+                            const x = (e.clientX - left) / width - 0.5;
+                            const y = (e.clientY - top) / height - 0.5;
+                            gsap.to(el, { rotationY: x * 10, rotationX: -y * 10, transformPerspective: 1000, ease: 'power1.out', duration: 0.5 });
+                        });
+                        el.addEventListener('mouseleave', () => {
+                            gsap.to(el, { rotationY: 0, rotationX: 0, ease: 'elastic.out(1, 0.5)', duration: 1 });
+                        });
+                    });
+                }
+            },
+
+            Celebration: {
+                start() {
+                    console.log("Starting birthday celebration! 🎉");
+                    if (typeof confetti === 'undefined') { console.error("Confetti library not loaded."); return; }
+                    const duration = 15 * 1000;
+                    const animationEnd = Date.now() + duration;
+                    const defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 1000 };
+                    function randomInRange(min, max) { return Math.random() * (max - min) + min; }
+                    const interval = setInterval(function() {
+                      const timeLeft = animationEnd - Date.now();
+                      if (timeLeft <= 0) return clearInterval(interval);
+                      const particleCount = 50 * (timeLeft / duration);
+                      confetti({ ...defaults, particleCount, origin: { x: randomInRange(0.1, 0.3), y: Math.random() - 0.2 } });
+                      confetti({ ...defaults, particleCount, origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 } });
+                    }, 250);
+                }
+            }
+        };
+
+        App.init();
+        
+        (function() {
+            const tracker = document.getElementById("scroll-progress-bar");
+            let hideTimeout;
+            function updatePageScrollTracker() {
+                const scrollTop = document.documentElement.scrollTop || document.body.scrollTop;
+                const scrollHeight = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+                let progress = (scrollTop / scrollHeight) * 100;
+                if (scrollTop >= scrollHeight) progress = 100;
+                if (tracker) {
+                    tracker.style.width = progress + "%";
+                    tracker.style.opacity = 1;
+                    clearTimeout(hideTimeout);
+                    hideTimeout = setTimeout(() => { tracker.style.opacity = 0; }, 1000);
+                }
+            }
+            window.addEventListener("load", updatePageScrollTracker);
+            window.addEventListener("scroll", updatePageScrollTracker);
+        })();
+    });
+    </script>
+
+</body>
+</html>
